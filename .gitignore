@@ -1,6 +1,7 @@
 target/
 src/LineBotSetting.xml
 src/targetcmd.txt
+src/test.json
 
 # for IntelliJ IDEA
 .idea/
