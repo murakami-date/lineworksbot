@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<linebotsetting>
+    <!-- API ID -->
+    <apiId>
+    </apiId>
+
+    <!-- サーバID -->
+    <serverId>
+    </serverId>
+
+    <!-- ボット番号 -->
+    <botNo>
+    </botNo>
+
+    <!-- 認証キー -->
+    <privateKey>
+    </privateKey>
+
+    <!-- コンシューマーキー -->
+    <consumerKey>
+    </consumerKey>
+
+    <!-- タイムリミット -->
+    <timeLimit>
+        3000
+    </timeLimit>
+    
+</linebotsetting>

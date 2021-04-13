@@ -1,0 +1,1 @@
+{ "from": "<SENDER_LINEWORKS_ID>", "send_to": [{"id": "<SEND_TO_LINEWORKS_ID>"}], "message" : "<MESSAGE>" }

@@ -1,0 +1,20 @@
+target/
+src/LineBotSetting.xml
+src/targetcmd.txt
+
+# for IntelliJ IDEA
+.idea/
+*.iml
+
+# for Visual Studio Code
+.vscode/
+
+# for Eclipse IDE
+.project
+.classpath
+.settings/
+
+# for Apache NetBeans
+nb-configuration.xml
+nbactions.xml
+
