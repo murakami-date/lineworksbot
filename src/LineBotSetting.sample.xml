@@ -3,6 +3,10 @@
     <!-- API ID -->
     <apiId>
     </apiId>
+    
+    <!-- ドメイン ID -->
+    <domainId>
+    </domainId>
 
     <!-- サーバID -->
     <serverId>
@@ -12,10 +16,6 @@
     <botNo>
     </botNo>
 
-    <!-- 認証キー -->
-    <privateKey>
-    </privateKey>
-
     <!-- コンシューマーキー -->
     <consumerKey>
     </consumerKey>
@@ -24,5 +24,24 @@
     <timeLimit>
         3000
     </timeLimit>
+
+    <clientId>
+    </clientId>
+    
+    <clientSercret>
+    </clientSercret>
+    
+    <redirectUri>
+    </redirectUri>
+
+    
+    <serviceAccountId>
+    </serviceAccountId>
+    
+    <scope>
+    </scope>
+    
+    <privateKey>
+    </privateKey>
     
 </linebotsetting>
