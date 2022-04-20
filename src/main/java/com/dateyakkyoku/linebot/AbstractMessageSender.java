@@ -18,6 +18,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.time.Instant;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -93,9 +99,27 @@ public abstract class AbstractMessageSender {
         this.exec();
     }
 
+    public String getWorkDir() {
+        String rvalue = "";
+        try {
+
+            ProtectionDomain pd = this.getClass().getProtectionDomain();
+            CodeSource cs = pd.getCodeSource();
+            URL location = cs.getLocation();
+            java.net.URI uri = location.toURI();
+            Path path = Paths.get(uri).getParent();
+            rvalue = path.toString();
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(AbstractMessageSender.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return rvalue;
+    }
+
     private void loadEnvironment() {
         try {
-            File envFile = new File(this.envrinmentFileName);
+            String settingPath = this.getWorkDir() + File.separator + this.envrinmentFileName;
+            
+            File envFile = new File(settingPath);
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
