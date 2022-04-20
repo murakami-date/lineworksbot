@@ -30,10 +30,15 @@ public class SimpleMessageSender extends AbstractMessageSender {
         messageText = messageText.replace("￥ｎ", "\\n");
 
         String message = "{\"accountId\":\""
-                + lineWorksId
+                + this.serviceAccountId
                 + "\",\"content\":{\"type\":\"text\",\"text\":\""
                 + messageText
                 + "\"}}";
+//        String message = "{"
+//                + "\"content\":{\"type\":\"text\",\"text\":\""
+//                + messageText
+//                + "\"}}";
+
         return message;
     }
 
@@ -52,7 +57,6 @@ public class SimpleMessageSender extends AbstractMessageSender {
 
     @Override
     public void onAfterSendMessage(String targetId, String Token, String result) {
-
         Logger.getLogger(SimpleMessageSender.class.getName()).log(Level.INFO, "RESULT : {0}", result);
     }
 
