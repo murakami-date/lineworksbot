@@ -164,8 +164,8 @@ public abstract class AbstractMessageSender {
             this.consumerKey = ((String) xPath.compile("/linebotsetting/consumerKey")
                     .evaluate(doc, XPathConstants.STRING)).trim();
 
-            this.timeLimit = Long.parseLong(((String) xPath.compile("/linebotsetting/timeLimit")
-                    .evaluate(doc, XPathConstants.STRING)).trim());
+            //this.timeLimit = Long.parseLong(((String) xPath.compile("/linebotsetting/timeLimit")
+            //        .evaluate(doc, XPathConstants.STRING)).trim());
 
             // clientId v2.0 設定
             this.clientId = ((String) xPath.compile("/linebotsetting/clientId")

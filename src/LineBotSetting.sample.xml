@@ -1,30 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <linebotsetting>
-    <!-- API ID -->
-    <apiId>
-    </apiId>
-    
-    <!-- ドメイン ID -->
-    <domainId>
-    </domainId>
-
-    <!-- サーバID -->
-    <serverId>
-    </serverId>
-
-    <!-- ボット番号 -->
-    <botNo>
-    </botNo>
-
-    <!-- コンシューマーキー -->
-    <consumerKey>
-    </consumerKey>
-
-    <!-- タイムリミット -->
-    <timeLimit>
-        3000
-    </timeLimit>
-
+    <!-- ver 2.0 setting -->
     <clientId>
     </clientId>
     
@@ -33,7 +9,6 @@
     
     <redirectUri>
     </redirectUri>
-
     
     <serviceAccountId>
     </serviceAccountId>
@@ -43,5 +18,8 @@
     
     <privateKey>
     </privateKey>
+    
+    <botNo>
+    </botNo>
     
 </linebotsetting>
