@@ -124,6 +124,7 @@ public abstract class AbstractMessageSender {
             java.net.URI uri = location.toURI();
             Path path = Paths.get(uri).getParent();
             rvalue = path.toString();
+            
         } catch (URISyntaxException ex) {
             Logger.getLogger(AbstractMessageSender.class.getName()).log(Level.SEVERE, null, ex);
         }

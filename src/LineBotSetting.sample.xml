@@ -2,24 +2,30 @@
 <linebotsetting>
     <!-- ver 2.0 setting -->
     <clientId>
+        lineworksで取得したクライアントID
     </clientId>
     
     <clientSercret>
+        lineworksで取得したClient Secret
     </clientSercret>
     
     <redirectUri>
     </redirectUri>
     
     <serviceAccountId>
+        lineworksで取得したserviceAccountId
     </serviceAccountId>
     
     <scope>
+        lineworksにで設定したスコープ
     </scope>
     
     <privateKey>
+        lineworksで取得したプライベートキー
     </privateKey>
     
     <botNo>
+        linweorksのボット番号
     </botNo>
     
 </linebotsetting>
