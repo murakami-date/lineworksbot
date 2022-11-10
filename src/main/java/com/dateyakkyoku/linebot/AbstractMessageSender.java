@@ -18,6 +18,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.time.Instant;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -34,11 +41,11 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 /**
@@ -62,7 +69,7 @@ public abstract class AbstractMessageSender {
     // ボット番号
     String botNo = "";
 
-    // 認証キー
+    // 認証キー v1.0 2.0 共用
     String privateKey = "";
 
     // コンシューマーキー
@@ -71,11 +78,25 @@ public abstract class AbstractMessageSender {
     // タイムリミット
     Long timeLimit = 3000L;
 
+    // クライアントID v2.0
+    String clientId = "";
+
+    // スコープ v2.0
+    String scope = "";
+
+    // クライアント署名用 v2.0
+    String clientSecret = "";
+
+    // サービスアカウントID v2.0
+    String serviceAccountId = "";
+
     // アクセストークン取得先URL
-    String tokenUrl = "https://auth.worksmobile.com/b/{API ID}/server/token";
+    //String tokenUrl = "https://auth.worksmobile.com/b/{API ID}/server/token";
+    String tokenUrl = "https://auth.worksmobile.com/oauth2/v2.0/token";
 
     // メッセージ送信先URL
-    String pushUrl = "https://apis.worksmobile.com/r/{API ID}/message/v1/bot/{botNo}/message/push";
+    //String pushUrl = "https://apis.worksmobile.com/r/{API ID}/message/v1/bot/{botNo}/message/push";
+    String pushUrl = "https://www.worksapis.com/v1.0/bots/{botId}/users/{userId}/messages";
 
     protected Properties properties = new Properties();
 
@@ -93,9 +114,28 @@ public abstract class AbstractMessageSender {
         this.exec();
     }
 
+    public String getWorkDir() {
+        String rvalue = "";
+        try {
+
+            ProtectionDomain pd = this.getClass().getProtectionDomain();
+            CodeSource cs = pd.getCodeSource();
+            URL location = cs.getLocation();
+            java.net.URI uri = location.toURI();
+            Path path = Paths.get(uri).getParent();
+            rvalue = path.toString();
+            
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(AbstractMessageSender.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return rvalue;
+    }
+
     private void loadEnvironment() {
         try {
-            File envFile = new File(this.envrinmentFileName);
+            String settingPath = this.getWorkDir() + File.separator + this.envrinmentFileName;
+
+            File envFile = new File(settingPath);
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
@@ -124,8 +164,24 @@ public abstract class AbstractMessageSender {
             this.consumerKey = ((String) xPath.compile("/linebotsetting/consumerKey")
                     .evaluate(doc, XPathConstants.STRING)).trim();
 
-            this.timeLimit = Long.parseLong(((String) xPath.compile("/linebotsetting/timeLimit")
-                    .evaluate(doc, XPathConstants.STRING)).trim());
+            //this.timeLimit = Long.parseLong(((String) xPath.compile("/linebotsetting/timeLimit")
+            //        .evaluate(doc, XPathConstants.STRING)).trim());
+
+            // clientId v2.0 設定
+            this.clientId = ((String) xPath.compile("/linebotsetting/clientId")
+                    .evaluate(doc, XPathConstants.STRING)).trim();
+
+            // client Secret v2.0 設定
+            this.clientSecret = ((String) xPath.compile("/linebotsetting/clientSercret")
+                    .evaluate(doc, XPathConstants.STRING)).trim();
+
+            // scope v2.0 設定
+            this.scope = ((String) xPath.compile("/linebotsetting/scope")
+                    .evaluate(doc, XPathConstants.STRING)).trim();
+
+            // scope v2.0 設定
+            this.serviceAccountId = ((String) xPath.compile("/linebotsetting/serviceAccountId")
+                    .evaluate(doc, XPathConstants.STRING)).trim();
 
         } catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException ex) {
             Logger.getLogger(AbstractMessageSender.class.getName()).log(Level.SEVERE, null, ex);
@@ -159,14 +215,13 @@ public abstract class AbstractMessageSender {
         Long startTime = Instant.now().getEpochSecond();
         Long endTime = startTime + timeLimit;
 
-        tokenUrl = tokenUrl.replace("{API ID}", apiId);
-
+        //tokenUrl = tokenUrl.replace("{API ID}", apiId);
         // 共通処理開始
         try {
 
             // 認証関連の設定より、オブジェクトをインスタンス化する
             // 認証キー
-            System.out.println(this.privateKey);
+            //System.out.println(this.privateKey);
             JWK jwk = JWK.parseFromPEMEncodedObjects(this.privateKey);
 
             // ヘッダー
@@ -176,7 +231,8 @@ public abstract class AbstractMessageSender {
 
             // 電文本体を格納
             JWTClaimsSet payload = new JWTClaimsSet.Builder()
-                    .claim("iss", serverId)
+                    .claim("iss", this.clientId)
+                    .claim("sub", this.serviceAccountId)
                     .claim("iat", startTime.toString())
                     .claim("exp", endTime.toString())
                     .build();
@@ -186,6 +242,7 @@ public abstract class AbstractMessageSender {
 
             SignedJWT signedJWT = new SignedJWT(header, payload); // ヘッダと電文本体を結合する。
             signedJWT.sign(signer); //署名を行う。
+            //System.out.println(signedJWT.serialize());
 
             // トークンを取得する
             // HttpClientインスタンス化
@@ -193,8 +250,12 @@ public abstract class AbstractMessageSender {
             client.getHostConfiguration().setHost(tokenUrl);
 
             PostMethod method = new PostMethod(tokenUrl);
-            method.addParameter("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer"); // アクセス許可種別は固定値
+            method.addParameter(new Header("Content-Type", "application/x-www-form-urlencoded"));
             method.addParameter("assertion", signedJWT.serialize());
+            method.addParameter("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer"); // アクセス許可種別は固定値
+            method.addParameter("client_id", this.clientId);
+            method.addParameter("client_secret", this.clientSecret);
+            method.addParameter("scope", this.scope);
 
             int result = client.executeMethod(method);
             if (result != 200) {
@@ -210,8 +271,6 @@ public abstract class AbstractMessageSender {
                 }
             }
 
-            // メッセージを送る
-            // ここからは発行するメッセージの処理に応じて個別実装する領域
             if (szResponse.contains("access_token")) {
 
                 // Responseからアクセストークンを抜き出す。
@@ -266,10 +325,14 @@ public abstract class AbstractMessageSender {
             Logger.getLogger(SimpleMessageSender.class.getName()).log(Level.INFO, "TARGET :{0}", lineWorksId);
 
             // LineWorksのメッセージ送信先URL
-            String pushUrl = this.pushUrl;
-            pushUrl = pushUrl.replace("{API ID}", apiId);
-            pushUrl = pushUrl.replace("{botNo}", botNo);
+            String msgUrl = this.pushUrl;
+//            pushUrl = pushUrl.replace("{API ID}", apiId);
+            msgUrl = msgUrl.replace("{botId}", botNo);
+
             try {
+                String eSendTo = URLEncoder.encode(lineWorksId, "UTF-8");
+                msgUrl = msgUrl.replace("{userId}", eSendTo);
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, "URL : {0}", msgUrl);
 
                 // アクセストークンを取得する。
                 String token = this.getAccessTalken();
@@ -279,18 +342,19 @@ public abstract class AbstractMessageSender {
                 if (token.length() > 0) {
                     // HttpClientインスタンス化
                     HttpClient client = new HttpClient();
-                    client.getHostConfiguration().setHost(pushUrl);
+                    client.getHostConfiguration().setHost(msgUrl);
 
                     // 送信するメッセージのヘッダを作成
-                    PostMethod pmethod = new PostMethod(pushUrl);
-                    pmethod.setRequestHeader("consumerKey", consumerKey);
+                    PostMethod pmethod = new PostMethod(msgUrl);
                     pmethod.setRequestHeader("authorization", "Bearer " + token);
+                    pmethod.setRequestHeader("Content-Type","application/json");
 
                     // メッセージを格納する。
                     // setBodyParameterでkey-value-pairにするLINEWORKS側でエラーを返す。
                     // なので、ResultEntityでJSONを書き込む。
                     String message = this.buildMessage(lineWorksId, messageText);
 
+                    //pmethod.setRequestEntity(new StringRequestEntity(message, "application/json", "UTF-8"));
                     pmethod.setRequestEntity(new StringRequestEntity(message, "application/json", "UTF-8"));
 
                     int code = client.executeMethod(pmethod);
@@ -300,6 +364,16 @@ public abstract class AbstractMessageSender {
                         this.onAfterSendMessage(lineWorksId, token, "FALSE : CODE " + code);
                     }
 
+                    String szResponse;
+                    try ( InputStreamReader ISR = new InputStreamReader(pmethod.getResponseBodyAsStream());  BufferedReader br = new BufferedReader(ISR)) {
+                        szResponse = "";
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            szResponse += line;
+                        }
+
+                    }
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, "BODY : {0}", szResponse);
                 }
 
             } catch (UnsupportedEncodingException ex) {
