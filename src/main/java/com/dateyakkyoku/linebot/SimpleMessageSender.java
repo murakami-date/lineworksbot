@@ -34,10 +34,6 @@ public class SimpleMessageSender extends AbstractMessageSender {
                 + "\",\"content\":{\"type\":\"text\",\"text\":\""
                 + messageText
                 + "\"}}";
-//        String message = "{"
-//                + "\"content\":{\"type\":\"text\",\"text\":\""
-//                + messageText
-//                + "\"}}";
 
         return message;
     }
