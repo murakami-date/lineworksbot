@@ -7,7 +7,7 @@ LINEWORKSにリマインドサービスを構築する際のバックエンド�
 * lineworksのメッセージAPIが2.0にアップグレードしたのに合わせて、内部動作を改定した。
 
 ## 環境設定
-LineBotSetting.sample.xml内にLINEボットの設定値をそれぞれ格納し、LineBotSetting.xmlにリネームする。
+LineBotSetting.sample.xml内にLINEWORKSボットの設定値をそれぞれ格納し、LineBotSetting.xmlにリネームする。
 
 ## 送信データの用意
 sample.jsonを元に、送信電文ファイルを作成する。(JSONファイルはUTF-8でコードしてください)
