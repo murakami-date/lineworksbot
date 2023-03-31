@@ -18,3 +18,20 @@ sample.jsonを元に、送信電文ファイルを作成する。(JSONファイ�
 
 ## 送信
 java -jar linebot2-x.x.x-jar-with-dependencies.jar -f [送信電文ファイル]
+
+## 組み込みで使用する場合(LineBotSetting.xmlを使用しない場合)
+
+SimpleMessageSenderを宣言し、LINEWORKSより提供された以下の項目をsetPropertyで指定する。
+
+* ボット番号　BOT_NO
+* 認証キー  PRIVATE_KEY
+* コンシューマーキー CONSUMER_KEY;
+* タイムリミット TIME_LIMIT
+* クライアントID CLIENT_ID
+* スコープ SCOPE
+* クライアント署名用 CLIENT_SECRET
+* サービスアカウントID SERVICE_ACCOUNT_ID
+
+その後、exec(String from, String[] sendTargets, String message)を呼び出すと、メッセージをsendTargetsに指定したユーザに向けて送信する。
+
+ 

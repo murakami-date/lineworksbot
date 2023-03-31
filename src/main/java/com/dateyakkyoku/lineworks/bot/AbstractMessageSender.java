@@ -1,4 +1,4 @@
-package com.dateyakkyoku.linebot;
+package com.dateyakkyoku.lineworks.bot;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +33,6 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonReader;
 import javax.json.JsonStructure;
-import javax.json.JsonValue;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,62 +52,58 @@ import org.xml.sax.SAXException;
  *
  * @author Takahiro MURAKAMI
  */
-public abstract class AbstractMessageSender {
+public abstract class AbstractMessageSender extends Properties {
 
     /**
      * LineBotの環境設定ファイル.
      */
     private String envrinmentFileName = "LineBotSetting.xml";
 
-    // API ID
-    String apiId = "";
-
-    // サーバID
-    String serverId = "";
-
     // ボット番号
-    String botNo = "";
+    public static final String BOT_NO = "BOT_NO";
 
     // 認証キー v1.0 2.0 共用
-    String privateKey = "";
-
-    // コンシューマーキー
-    String consumerKey = "";
+    public static final String PRIVATE_KEY = "PRIVATE_KEY";
 
     // タイムリミット
-    Long timeLimit = 3000L;
+    public static final String TIME_LIMIT = "TIME_LIMIT";
 
     // クライアントID v2.0
-    String clientId = "";
+    public static final String CLIENT_ID = "CLIENT_ID";
 
     // スコープ v2.0
-    String scope = "";
+    public static final String SCOPE = "SCOPE";
 
     // クライアント署名用 v2.0
-    String clientSecret = "";
+    public static final String CLIENT_SECRET = "CLIENT_SECRET";
 
     // サービスアカウントID v2.0
-    String serviceAccountId = "";
+    public static final String SERVICE_ACCOUNT_ID = "SERVICE_ACCOUNT_ID";
 
     // アクセストークン取得先URL
-    //String tokenUrl = "https://auth.worksmobile.com/b/{API ID}/server/token";
+    public static final String TOKEN_URL = "TOKEN_URL";
     String tokenUrl = "https://auth.worksmobile.com/oauth2/v2.0/token";
 
     // メッセージ送信先URL
-    //String pushUrl = "https://apis.worksmobile.com/r/{API ID}/message/v1/bot/{botNo}/message/push";
+    public static final String PUSH_URL = "PUSH_URL";
     String pushUrl = "https://www.worksapis.com/v1.0/bots/{botId}/users/{userId}/messages";
 
-    protected Properties properties = new Properties();
+    // 外部引数を格納する
+    protected Properties args = new Properties();
 
-    public AbstractMessageSender(String[] args) {
+    public AbstractMessageSender() {
+
+    }
+
+    public AbstractMessageSender(String[] arguments) {
 
         this.loadEnvironment();
 
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].contains("-")) {
-                properties.setProperty(
-                        args[i].substring(1),
-                        args[++i]);
+        for (int i = 0; i < arguments.length; i++) {
+            if (arguments[i].contains("-")) {
+                this.args.setProperty(
+                        arguments[i].substring(1),
+                        arguments[++i]);
             }
         }
         this.exec();
@@ -124,13 +119,14 @@ public abstract class AbstractMessageSender {
             java.net.URI uri = location.toURI();
             Path path = Paths.get(uri).getParent();
             rvalue = path.toString();
-            
+
         } catch (URISyntaxException ex) {
             Logger.getLogger(AbstractMessageSender.class.getName()).log(Level.SEVERE, null, ex);
         }
         return rvalue;
     }
 
+    // ファイルから設定を取得する。
     private void loadEnvironment() {
         try {
             String settingPath = this.getWorkDir() + File.separator + this.envrinmentFileName;
@@ -143,69 +139,56 @@ public abstract class AbstractMessageSender {
             doc.getDocumentElement().normalize();
             XPath xPath = XPathFactory.newInstance().newXPath();
 
-            this.apiId = ((String) xPath.compile("/linebotsetting/apiId")
-                    .evaluate(doc, XPathConstants.STRING)).trim();
+            this.setProperty(BOT_NO,
+                    ((String) xPath.compile("/linebotsetting/botNo")
+                            .evaluate(doc, XPathConstants.STRING)).trim());
 
-            this.serverId = ((String) xPath.compile("/linebotsetting/serverId")
-                    .evaluate(doc, XPathConstants.STRING)).trim();
+            this.setProperty(PRIVATE_KEY,
+                    ((String) xPath.compile("/linebotsetting/privateKey")
+                            .evaluate(doc, XPathConstants.STRING)).trim());
 
-            this.botNo = ((String) xPath.compile("/linebotsetting/botNo")
-                    .evaluate(doc, XPathConstants.STRING)).trim();
-
-            this.privateKey = ((String) xPath.compile("/linebotsetting/privateKey")
-                    .evaluate(doc, XPathConstants.STRING)).trim();
-            String[] keys = this.privateKey.split("\n");
-            this.privateKey = "";
+            // プライベートキーが改行されている場合の対処
+            String[] keys = this.getProperty(PRIVATE_KEY).split("\n");
+            String pkey = "";
             for (String key : keys) {
-                this.privateKey += key.trim().replace("\\n", "\n");
+                pkey += key.trim().replace("\\n", "\n");
             }
-            this.privateKey = this.privateKey.replaceAll("\\n", "\n");
-
-            this.consumerKey = ((String) xPath.compile("/linebotsetting/consumerKey")
-                    .evaluate(doc, XPathConstants.STRING)).trim();
-
-            //this.timeLimit = Long.parseLong(((String) xPath.compile("/linebotsetting/timeLimit")
-            //        .evaluate(doc, XPathConstants.STRING)).trim());
+            this.setProperty(PRIVATE_KEY, pkey.replaceAll("\\n", "\n"));
 
             // clientId v2.0 設定
-            this.clientId = ((String) xPath.compile("/linebotsetting/clientId")
-                    .evaluate(doc, XPathConstants.STRING)).trim();
+            this.setProperty(CLIENT_ID,
+                    ((String) xPath.compile("/linebotsetting/clientId")
+                            .evaluate(doc, XPathConstants.STRING)).trim());
 
             // client Secret v2.0 設定
-            this.clientSecret = ((String) xPath.compile("/linebotsetting/clientSercret")
-                    .evaluate(doc, XPathConstants.STRING)).trim();
+            this.setProperty(CLIENT_SECRET,
+                    ((String) xPath.compile("/linebotsetting/clientSercret")
+                            .evaluate(doc, XPathConstants.STRING)).trim());
 
             // scope v2.0 設定
-            this.scope = ((String) xPath.compile("/linebotsetting/scope")
-                    .evaluate(doc, XPathConstants.STRING)).trim();
+            this.setProperty(SCOPE,
+                    ((String) xPath.compile("/linebotsetting/scope")
+                            .evaluate(doc, XPathConstants.STRING)).trim());
 
             // scope v2.0 設定
-            this.serviceAccountId = ((String) xPath.compile("/linebotsetting/serviceAccountId")
-                    .evaluate(doc, XPathConstants.STRING)).trim();
+            this.setProperty(SERVICE_ACCOUNT_ID,
+                    ((String) xPath.compile("/linebotsetting/serviceAccountId")
+                            .evaluate(doc, XPathConstants.STRING)).trim());
 
         } catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException ex) {
             Logger.getLogger(AbstractMessageSender.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public void setProperty(String key, String value) {
-        this.properties.setProperty(key, value);
-    }
-
-    public String getProperty(String key) {
-        return this.properties.getProperty(key);
-    }
-
-    public AbstractMessageSender() {
-
-    }
-
     public void setTokenTimeLimit(Long limit) {
-        this.timeLimit = limit;
+        this.setProperty(TIME_LIMIT, String.valueOf(limit));
     }
 
     public Long getTokenTimeLimit() {
-        return this.timeLimit;
+        if (!this.containsKey(this)) {
+            this.setProperty(TIME_LIMIT, "3000");
+        }
+        return Long.valueOf(this.getProperty(TIME_LIMIT));
     }
 
     public String getAccessTalken() throws Exception {
@@ -213,16 +196,16 @@ public abstract class AbstractMessageSender {
         String rvalue = "";
 
         Long startTime = Instant.now().getEpochSecond();
-        Long endTime = startTime + timeLimit;
+        Long endTime = startTime + this.getTokenTimeLimit();
 
-        //tokenUrl = tokenUrl.replace("{API ID}", apiId);
         // 共通処理開始
         try {
 
             // 認証関連の設定より、オブジェクトをインスタンス化する
             // 認証キー
             //System.out.println(this.privateKey);
-            JWK jwk = JWK.parseFromPEMEncodedObjects(this.privateKey);
+            JWK jwk = JWK.parseFromPEMEncodedObjects(
+                    this.getProperty(PRIVATE_KEY));
 
             // ヘッダー
             JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
@@ -231,8 +214,8 @@ public abstract class AbstractMessageSender {
 
             // 電文本体を格納
             JWTClaimsSet payload = new JWTClaimsSet.Builder()
-                    .claim("iss", this.clientId)
-                    .claim("sub", this.serviceAccountId)
+                    .claim("iss", this.getProperty(CLIENT_ID))
+                    .claim("sub", this.getProperty(SERVICE_ACCOUNT_ID))
                     .claim("iat", startTime.toString())
                     .claim("exp", endTime.toString())
                     .build();
@@ -242,7 +225,6 @@ public abstract class AbstractMessageSender {
 
             SignedJWT signedJWT = new SignedJWT(header, payload); // ヘッダと電文本体を結合する。
             signedJWT.sign(signer); //署名を行う。
-            //System.out.println(signedJWT.serialize());
 
             // トークンを取得する
             // HttpClientインスタンス化
@@ -253,17 +235,18 @@ public abstract class AbstractMessageSender {
             method.addParameter(new Header("Content-Type", "application/x-www-form-urlencoded"));
             method.addParameter("assertion", signedJWT.serialize());
             method.addParameter("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer"); // アクセス許可種別は固定値
-            method.addParameter("client_id", this.clientId);
-            method.addParameter("client_secret", this.clientSecret);
-            method.addParameter("scope", this.scope);
+            method.addParameter("client_id", this.getProperty(CLIENT_ID));
+            method.addParameter("client_secret", this.getProperty(CLIENT_SECRET));
+            method.addParameter("scope", this.getProperty(SCOPE));
 
             int result = client.executeMethod(method);
             if (result != 200) {
-                throw new Exception("アクセストークンの取得に失敗しました。");
+                String errmsg = String.format("アクセストークンの取得に失敗しました。[%n]", result);
+                throw new Exception(errmsg);
             }
 
             String szResponse;
-            try ( InputStreamReader ISR = new InputStreamReader(method.getResponseBodyAsStream());  BufferedReader br = new BufferedReader(ISR)) {
+            try (InputStreamReader ISR = new InputStreamReader(method.getResponseBodyAsStream()); BufferedReader br = new BufferedReader(ISR)) {
                 szResponse = "";
                 String line;
                 while ((line = br.readLine()) != null) {
@@ -311,23 +294,16 @@ public abstract class AbstractMessageSender {
         return rvalue;
     }
 
-    public void exec() {
+    public void exec(String from, String[] sendTargets, String messageText) {
 
-        String jsonFilePath = this.getProperty("f");
-        JsonStructure jStr = this.parse(jsonFilePath);
+        for (String sendTo : sendTargets) {
 
-        String messageText = jStr.asJsonObject().getString("message");
-        JsonArray sendToList = (JsonArray) jStr.getValue("/send_to");
-
-        for (JsonValue sendTo : sendToList) {
-
-            String lineWorksId = sendTo.asJsonObject().getString("id");
+            String lineWorksId = sendTo;
             Logger.getLogger(SimpleMessageSender.class.getName()).log(Level.INFO, "TARGET :{0}", lineWorksId);
 
             // LineWorksのメッセージ送信先URL
             String msgUrl = this.pushUrl;
-//            pushUrl = pushUrl.replace("{API ID}", apiId);
-            msgUrl = msgUrl.replace("{botId}", botNo);
+            msgUrl = msgUrl.replace("{botId}", this.getProperty(BOT_NO));
 
             try {
                 String eSendTo = URLEncoder.encode(lineWorksId, "UTF-8");
@@ -347,25 +323,30 @@ public abstract class AbstractMessageSender {
                     // 送信するメッセージのヘッダを作成
                     PostMethod pmethod = new PostMethod(msgUrl);
                     pmethod.setRequestHeader("authorization", "Bearer " + token);
-                    pmethod.setRequestHeader("Content-Type","application/json");
+                    pmethod.setRequestHeader("Content-Type", "application/json");
 
                     // メッセージを格納する。
                     // setBodyParameterでkey-value-pairにするLINEWORKS側でエラーを返す。
                     // なので、ResultEntityでJSONを書き込む。
                     String message = this.buildMessage(lineWorksId, messageText);
 
-                    //pmethod.setRequestEntity(new StringRequestEntity(message, "application/json", "UTF-8"));
                     pmethod.setRequestEntity(new StringRequestEntity(message, "application/json", "UTF-8"));
 
                     int code = client.executeMethod(pmethod);
-                    if (code == 200) {
-                        this.onAfterSendMessage(lineWorksId, token, "SUCCESS");
-                    } else {
-                        this.onAfterSendMessage(lineWorksId, token, "FALSE : CODE " + code);
+                    switch (code) {
+                        case 200:
+                            this.onAfterSendMessage(lineWorksId, token, "SUCCESS");
+                            break;
+                        case 201:
+                            this.onAfterSendMessage(lineWorksId, token, "CREATED");
+                            break;
+                        default:
+                            this.onAfterSendMessage(lineWorksId, token, "FALSE : CODE " + code);
+                            break;
                     }
 
                     String szResponse;
-                    try ( InputStreamReader ISR = new InputStreamReader(pmethod.getResponseBodyAsStream());  BufferedReader br = new BufferedReader(ISR)) {
+                    try (InputStreamReader ISR = new InputStreamReader(pmethod.getResponseBodyAsStream()); BufferedReader br = new BufferedReader(ISR)) {
                         szResponse = "";
                         String line;
                         while ((line = br.readLine()) != null) {
@@ -384,6 +365,22 @@ public abstract class AbstractMessageSender {
                 Logger.getLogger(SimpleMessageSender.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    public void exec() {
+
+        String jsonFilePath = this.args.getProperty("f");
+        JsonStructure jStr = this.parse(jsonFilePath);
+
+        String messageText = jStr.asJsonObject().getString("message");
+        JsonArray sendToList = (JsonArray) jStr.getValue("/send_to");
+
+        String[] sendTargets = new String[sendToList.size()];
+        for (int i = 0; i < sendTargets.length; i++) {
+            sendTargets[i] = sendToList.getJsonObject(i).getString("id");
+        }
+
+        this.exec(SCOPE, sendTargets, messageText);
 
     }
 
@@ -393,7 +390,9 @@ public abstract class AbstractMessageSender {
      * @param targetId
      * @param token
      */
-    public abstract void onGettingToken(String token);
+    public void onGettingToken(String token) {
+        Logger.getLogger(SimpleMessageSender.class.getName()).log(Level.INFO, "TOKEN : {0}", token);
+    }
 
     /**
      * メッセージ送信後の処理. 本来は会話処理に終了フラグを立てたりする。
@@ -402,7 +401,9 @@ public abstract class AbstractMessageSender {
      * @param token
      * @param message
      */
-    public abstract void onAfterSendMessage(String targetId, String token, String message);
+    public void onAfterSendMessage(String targetId, String Token, String result) {
+        Logger.getLogger(SimpleMessageSender.class.getName()).log(Level.INFO, "RESULT : {0}", result);
+    }
 
     /**
      * メッセージをビルドする.

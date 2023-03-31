@@ -1,7 +1,4 @@
-package com.dateyakkyoku.linebot;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+package com.dateyakkyoku.lineworks.bot;
 
 /**
  * 指定したＩＤに指定した文言を送信するシンプルなLINEWORKSボットの実装例
@@ -20,6 +17,7 @@ public class SimpleMessageSender extends AbstractMessageSender {
 
     /**
      * メッセージ本体からJSONを作成する。
+     * やっつけ仕事。
      *
      * @param lineWorksId
      * @param messageText
@@ -30,7 +28,7 @@ public class SimpleMessageSender extends AbstractMessageSender {
         messageText = messageText.replace("￥ｎ", "\\n");
 
         String message = "{\"accountId\":\""
-                + this.serviceAccountId
+                + this.getProperty(SERVICE_ACCOUNT_ID)
                 + "\",\"content\":{\"type\":\"text\",\"text\":\""
                 + messageText
                 + "\"}}";
@@ -45,15 +43,4 @@ public class SimpleMessageSender extends AbstractMessageSender {
             System.out.println("引数 -f <jsonFile>");
         }
     }
-
-    @Override
-    public void onGettingToken(String token) {
-        Logger.getLogger(SimpleMessageSender.class.getName()).log(Level.INFO, "TOKEN : {0}", token);
-    }
-
-    @Override
-    public void onAfterSendMessage(String targetId, String Token, String result) {
-        Logger.getLogger(SimpleMessageSender.class.getName()).log(Level.INFO, "RESULT : {0}", result);
-    }
-
 }
