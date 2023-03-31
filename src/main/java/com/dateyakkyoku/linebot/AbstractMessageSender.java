@@ -100,6 +100,10 @@ public abstract class AbstractMessageSender {
 
     protected Properties properties = new Properties();
 
+    public AbstractMessageSender() {
+
+    }
+
     public AbstractMessageSender(String[] args) {
 
         this.loadEnvironment();
@@ -131,6 +135,7 @@ public abstract class AbstractMessageSender {
         return rvalue;
     }
 
+    // ファイルから設定を取得する。
     private void loadEnvironment() {
         try {
             String settingPath = this.getWorkDir() + File.separator + this.envrinmentFileName;
@@ -196,9 +201,6 @@ public abstract class AbstractMessageSender {
         return this.properties.getProperty(key);
     }
 
-    public AbstractMessageSender() {
-
-    }
 
     public void setTokenTimeLimit(Long limit) {
         this.timeLimit = limit;
@@ -215,7 +217,6 @@ public abstract class AbstractMessageSender {
         Long startTime = Instant.now().getEpochSecond();
         Long endTime = startTime + timeLimit;
 
-        //tokenUrl = tokenUrl.replace("{API ID}", apiId);
         // 共通処理開始
         try {
 
@@ -242,7 +243,6 @@ public abstract class AbstractMessageSender {
 
             SignedJWT signedJWT = new SignedJWT(header, payload); // ヘッダと電文本体を結合する。
             signedJWT.sign(signer); //署名を行う。
-            //System.out.println(signedJWT.serialize());
 
             // トークンを取得する
             // HttpClientインスタンス化
@@ -259,7 +259,8 @@ public abstract class AbstractMessageSender {
 
             int result = client.executeMethod(method);
             if (result != 200) {
-                throw new Exception("アクセストークンの取得に失敗しました。");
+                String errmsg = String.format("アクセストークンの取得に失敗しました。[%n]" , result);
+                throw new Exception(errmsg);
             }
 
             String szResponse;
@@ -326,7 +327,6 @@ public abstract class AbstractMessageSender {
 
             // LineWorksのメッセージ送信先URL
             String msgUrl = this.pushUrl;
-//            pushUrl = pushUrl.replace("{API ID}", apiId);
             msgUrl = msgUrl.replace("{botId}", botNo);
 
             try {
@@ -354,7 +354,6 @@ public abstract class AbstractMessageSender {
                     // なので、ResultEntityでJSONを書き込む。
                     String message = this.buildMessage(lineWorksId, messageText);
 
-                    //pmethod.setRequestEntity(new StringRequestEntity(message, "application/json", "UTF-8"));
                     pmethod.setRequestEntity(new StringRequestEntity(message, "application/json", "UTF-8"));
 
                     int code = client.executeMethod(pmethod);

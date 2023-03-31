@@ -20,6 +20,7 @@ public class SimpleMessageSender extends AbstractMessageSender {
 
     /**
      * メッセージ本体からJSONを作成する。
+     * やっつけ仕事。
      *
      * @param lineWorksId
      * @param messageText
