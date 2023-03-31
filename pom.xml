@@ -100,4 +100,5 @@
             </plugin>
         </plugins>
     </build>
+    <name>lineworksbot2</name>
 </project>
