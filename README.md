@@ -18,7 +18,9 @@ sample.jsonを元に、送信電文ファイルを作成する。(JSONファイ�
 
 ## 送信
 java -jar linebot2-x.x.x-jar-with-dependencies.jar -f [送信電文ファイル] < -s [設定XMLファイル] >
+
 -f 電文の格納されたjsonファイルを指定
+
 -s 設定の格納されたxmlファイルを指定する（省略するとLineBotSetting.xmlを使用する)
 
 ## 組み込みで使用する場合(LineBotSetting.xmlを使用しない場合)
