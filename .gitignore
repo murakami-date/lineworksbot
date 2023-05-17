@@ -1,5 +1,6 @@
 target/
 src/LineBotSetting.xml
+src/LineBotSetting_alter.xml
 src/targetcmd.txt
 src/test.json
 

@@ -59,6 +59,10 @@ public abstract class AbstractMessageSender extends Properties {
      */
     private String envrinmentFileName = "LineBotSetting.xml";
 
+    public static final String MESSAGE_JSON_SWITCH = "f";
+    
+    public static final String SETTING_XML_SWITCH = "s";
+
     // ボット番号
     public static final String BOT_NO = "BOT_NO";
 
@@ -97,8 +101,6 @@ public abstract class AbstractMessageSender extends Properties {
 
     public AbstractMessageSender(String[] arguments) {
 
-        this.loadEnvironment();
-
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].contains("-")) {
                 this.args.setProperty(
@@ -106,6 +108,12 @@ public abstract class AbstractMessageSender extends Properties {
                         arguments[++i]);
             }
         }
+        
+        // 引数チェック
+        if(this.args.containsKey(SETTING_XML_SWITCH)){
+            this.envrinmentFileName = this.args.getProperty(SETTING_XML_SWITCH);
+        }      
+        this.loadEnvironment();
         this.exec();
     }
 
@@ -126,9 +134,14 @@ public abstract class AbstractMessageSender extends Properties {
         return rvalue;
     }
 
-    // ファイルから設定を取得する。
-    private void loadEnvironment() {
+    /**
+     * ファイルから設定を取得する。
+     */
+    public void loadEnvironment() {
         try {
+            
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, "setting xml {0} loaded.", this.envrinmentFileName);
+
             String settingPath = this.getWorkDir() + File.separator + this.envrinmentFileName;
 
             File envFile = new File(settingPath);
@@ -369,7 +382,7 @@ public abstract class AbstractMessageSender extends Properties {
 
     public void exec() {
 
-        String jsonFilePath = this.args.getProperty("f");
+        String jsonFilePath = this.args.getProperty(MESSAGE_JSON_SWITCH);
         JsonStructure jStr = this.parse(jsonFilePath);
 
         String messageText = jStr.asJsonObject().getString("message");

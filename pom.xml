@@ -57,7 +57,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.dateyakkyoku.linebot.SimpleMessageSender</mainClass>
+                            <mainClass>com.dateyakkyoku.lineworks.bot.SimpleMessageSender</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -86,8 +86,7 @@
                                 <resource>
                                     <directory>${project.basedir}/src</directory>
                                     <includes>
-                                        <include>LineBotSetting.xml</include>
-                                        <include>LineBotSetting.sample.xml</include>
+                                        <include>LineBotSetting*.xml</include>
                                         <include>sample.json</include>
                                         <include>test.json</include>
                                         <include>targetcmd.txt</include>
